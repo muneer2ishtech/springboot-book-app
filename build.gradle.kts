@@ -1,18 +1,20 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.5.7"
+	id("org.springframework.boot") version "3.5.9"
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
 group = "fi.ishtech.practice"
-version = "0.2.0"
+version = "0.3.0"
 description = "Books managing application using Spring Boot"
 
 // Centralized version declarations
-val ishtechSpringbootJwtauthVersion = "0.5.0"
+val ishtechBaseJpaVersion = "3.1.0"
+val ishtechSpringbootJwtauthVersion = "1.0.0"
 val mapstructVersion = "1.6.3"
 val jjwtVersion = "0.13.0"
-val springdocVersion = "2.8.13"
+val springdocVersion = "2.8.15"
+val hibernateVersion = "6.6.39.Final"
 
 java {
 	toolchain {
@@ -29,9 +31,17 @@ configurations {
 repositories {
 	mavenLocal()
 	mavenCentral()
+	maven {
+		name = "Central Portal Snapshots"
+		url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+		mavenContent {
+			snapshotsOnly()
+		}
+	}
 }
 
 dependencies {
+	implementation("fi.ishtech.base:ishtech-base-jpa:${ishtechBaseJpaVersion}")
 	implementation("fi.ishtech.springboot:ishtech-springboot-jwtauth-api:${ishtechSpringbootJwtauthVersion}")
 
 	implementation("org.springframework.boot:spring-boot-starter-web")
@@ -47,6 +57,7 @@ dependencies {
 	implementation("org.flywaydb:flyway-database-postgresql")
 
 	implementation("org.hibernate.orm:hibernate-envers")
+	annotationProcessor("org.hibernate:hibernate-jpamodelgen:${hibernateVersion}")
 
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
@@ -71,4 +82,16 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+tasks.register("printVersion") {
+    doLast {
+        println(project.version)
+    }
+}
+
+tasks.register("printProjectName") {
+    doLast {
+        println(project.name)
+    }
 }

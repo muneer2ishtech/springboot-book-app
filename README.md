@@ -2,76 +2,50 @@
 Books managing application using Spring Boot
 
 ## Tech stack
-- JDK:25
-- Spring-boot:3.5.6
-- PostgreSql:18
-- Flyway for DB Migration
+- Java: 25
+- Spring Boot: 3.5.9
+- Database: PostgreSql:18
+- Database Migration: Flyway
+- Containerization: Docker
+
+##
+
+[GIT](https://github.com/muneer2ishtech/springboot-book-app)
 
 
-TODO: more information
+## Design
+- [ishtech-jpa-base](https://github.com/ishtech/ishtech-base-jpa) - Foundational JPA and other base classes
+- [ishtech-springboot-jwtauth](https://github.com/ishtech/ishtech-springboot-jwtauth) - For Authentiation & Authorization
 
-## Database
+## APIs
 
-### Dev DB setup
-- Run following for first time before launching spring-boot-boot-app after PostgreSql is started
+- For details you can see swagger documentation
+    - [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+    - [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+- Note: Check and update URI and PORT on which application is running
 
-```
-\connect ishtech_dev_db;
+- For Authentiation & Authorization APIs:
+    - See [ishtech-springboot-jwtauth](https://github.com/ishtech/ishtech-springboot-jwtauth)
 
--- ===== Common =====
-CREATE USER bookapp_dev_user        PASSWORD 'bookapp_dev_pass'        NOSUPERUSER;
-CREATE USER bookapp_dev_flyway_user PASSWORD 'bookapp_dev_flyway_pass' NOSUPERUSER;
 
-GRANT CONNECT ON DATABASE ishtech_dev_db TO bookapp_dev_user;
-GRANT CONNECT ON DATABASE ishtech_dev_db TO bookapp_dev_flyway_user;
+## DB
 
-CREATE SCHEMA bookapp_dev_schema;
-CREATE SCHEMA bookapp_dev_aud_schema;
+### Local
+- You need local instance or docker of local PostgreSQL
 
--- ===== App User =====
-GRANT USAGE ON SCHEMA public                 TO bookapp_dev_user;
-GRANT USAGE ON SCHEMA bookapp_dev_schema     TO bookapp_dev_user;
-GRANT USAGE ON SCHEMA bookapp_dev_aud_schema TO bookapp_dev_user;
+- I have customized docker for various databases
+    - For PostgreSQL
+        - See [https://github.com/IshTech/docker-db/tree/main/postgres](https://github.com/IshTech/docker-db/tree/main/postgres)
 
--- For existing tables
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA bookapp_dev_schema     TO bookapp_dev_user;
-GRANT SELECT, INSERT                 ON ALL TABLES IN SCHEMA bookapp_dev_aud_schema TO bookapp_dev_user;
+- Login to DB as `root` / `superuser` and run [init_db.sql](src/test/resources/db/init_db.sql) to setup DB Schema, DB User and Grant privileges
 
--- For existing sequences
-GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA bookapp_dev_schema     TO bookapp_dev_user;
-GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA bookapp_dev_aud_schema TO bookapp_dev_user;
-
--- For future tables and sequences created by bookapp_dev_flyway_user
-ALTER DEFAULT PRIVILEGES FOR ROLE bookapp_dev_flyway_user IN SCHEMA bookapp_dev_schema     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO bookapp_dev_user;
-ALTER DEFAULT PRIVILEGES FOR ROLE bookapp_dev_flyway_user IN SCHEMA bookapp_dev_aud_schema GRANT SELECT, INSERT                 ON TABLES TO bookapp_dev_user;
-
-ALTER DEFAULT PRIVILEGES FOR ROLE bookapp_dev_flyway_user IN SCHEMA bookapp_dev_schema     GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO bookapp_dev_user;
-ALTER DEFAULT PRIVILEGES FOR ROLE bookapp_dev_flyway_user IN SCHEMA bookapp_dev_aud_schema GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO bookapp_dev_user;
-
--- ===== Flyway User =====
-GRANT USAGE         ON SCHEMA public                 TO bookapp_dev_flyway_user;
-GRANT USAGE, CREATE ON SCHEMA bookapp_dev_schema     TO bookapp_dev_flyway_user;
-GRANT USAGE, CREATE ON SCHEMA bookapp_dev_aud_schema TO bookapp_dev_flyway_user;
-
--- For existing tables
-GRANT SELECT ON ALL TABLES IN SCHEMA bookapp_dev_schema     TO bookapp_dev_flyway_user;
-GRANT SELECT ON ALL TABLES IN SCHEMA bookapp_dev_aud_schema TO bookapp_dev_flyway_user;
-
--- For existing sequences
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA bookapp_dev_schema     TO bookapp_dev_flyway_user;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA bookapp_dev_aud_schema TO bookapp_dev_flyway_user;
-
--- For future tables and sequences created by bookapp_dev_flyway_user
-ALTER DEFAULT PRIVILEGES FOR ROLE bookapp_dev_flyway_user IN SCHEMA bookapp_dev_schema     GRANT SELECT ON TABLES TO bookapp_dev_flyway_user;
-ALTER DEFAULT PRIVILEGES FOR ROLE bookapp_dev_flyway_user IN SCHEMA bookapp_dev_aud_schema GRANT SELECT ON TABLES TO bookapp_dev_flyway_user;
-
-ALTER DEFAULT PRIVILEGES FOR ROLE bookapp_dev_flyway_user IN SCHEMA bookapp_dev_schema     GRANT USAGE, SELECT ON SEQUENCES TO bookapp_dev_flyway_user;
-ALTER DEFAULT PRIVILEGES FOR ROLE bookapp_dev_flyway_user IN SCHEMA bookapp_dev_aud_schema GRANT USAGE, SELECT ON SEQUENCES TO bookapp_dev_flyway_user;
-
--- Note: DROP, INSERT, UPDATE, DELETE for Flyway can be added later if needed
--- Note: CREATE USER is alias for CREATE ROLE WITH LOGIN
+#### DB Access
 
 ```
+psql -U ishtech_dev_user -W -d ishtech_dev_db
+```
+
+- Enter password on prompt `ishtech_dev_pass`
 
 ### Flyway migration files
 - Path `src/main/resources/db/migration/`
@@ -84,28 +58,62 @@ touch src/main/resources/db/migration/V$(date +"%Y%m%d_%H%M%S")__create_table_TO
 ```
 
 
-## Build
+## Build and Run
 
-### Build and run on local
+- Ensure the port, db properties etc are correct in application-xxx.properties
 
-- To build without tests
+### Gradle
+
+#### Local Gradle Build
+
+- Build without tests
 
 ```
 ./gradlew clean build -x test
-	
 ```
 
-- To build with tests
+- Build with Junit tests
 
 ```
 ./gradlew clean build
-
 ```
 
-- To run the spring-boot application with `dev` profile
-
+#### Local Gradle Run
 
 ```
 ./gradlew bootRun --args='--spring.profiles.active=dev'
+```
+
+### Docker
+
+#### Docker build
+
+```
+docker build . \
+  --build-arg SERVER_PORT=8080 \
+  -t "muneer2ishtech/$(./gradlew -q printProjectName):$(./gradlew -q printVersion)"
+
+```
+
+#### Run with docker compose
+
+- Docker compose is self contained and has both spring-boot application and mariadb is present, so  you don't need anything else other than docker
+
+- To stop if running
+    - `docker compose stop`
+
+- To stop and remove including volumes and built images
+    - `docker compose down -v --rmi=local`
+
+- To build and start
+    - You can prefix with env vars as in below example
+    - Below args are optional, you can change to desired value or skip, if skipped they will use default value
+        - `DB_PORT` if skipped DB will be exposed on default `3306`
+        - `SERVER_PORT_REMOTE` if skipped spring-boot app will run on default `8080`
+        - `SERVER_PORT_LOCAL` if skipped spring-boot app will be exposed on default `8080`
+
+```
+SERVER_PORT_LOCAL=8383 DB_PORT=25432 APP_VERSION=$(./gradlew -q printVersion) \
+docker compose up --build
 
 ```
