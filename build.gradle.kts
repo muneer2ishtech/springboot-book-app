@@ -12,7 +12,7 @@ base.archivesName.set("ishtech-springboot-books-app")
 
 // Centralized version declarations
 val ishtechBaseJpaVersion = "5.3.0-SNAPSHOT"
-val ishtechSpringbootJwtauthVersion = "3.2.1"
+val ishtechSpringbootJwtauthVersion = "3.3.0-SNAPSHOT"
 val ishtechValidationsVersion = "0.1.0-SNAPSHOT"
 val mapstructVersion = "1.6.3"
 val jjwtVersion = "0.13.0"
