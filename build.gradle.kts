@@ -11,7 +11,7 @@ description = "Books managing application using Spring Boot"
 base.archivesName.set("ishtech-springboot-books-app")
 
 // Centralized version declarations
-val ishtechBaseJpaVersion = "5.2.0"
+val ishtechBaseJpaVersion = "5.3.0-SNAPSHOT"
 val ishtechSpringbootJwtauthVersion = "3.2.1"
 val ishtechValidationsVersion = "0.1.0-SNAPSHOT"
 val mapstructVersion = "1.6.3"
